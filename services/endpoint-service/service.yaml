@@ -1,5 +1,4 @@
-Description: >
-    This is an example of a long running ECS service that serves a JSON API of homeless.
+Description: Web service to display the catalog of team services
 
 Parameters:
 
@@ -16,22 +15,18 @@ Parameters:
         Type: Number
         Default: 2
 
+    ALB:
+        Description: The URL of the ALB
+        Type: String
+
     Listener:
         Description: The Application Load Balancer listener to register with
-        Type: String
-
-    ConfigBucket:
-        Description: The configuration bucket we want to use
-        Type: String
-
-    DeployTarget:
-        Description: Which environment (Valid Values - INTEGRATION, PRODUCTION)
         Type: String
 
     Path:
         Description: The path to register with the Application Load Balancer
         Type: String
-        Default: /homeless
+        Default: /
 
 Resources:
 
@@ -44,24 +39,22 @@ Resources:
             DesiredCount: !Ref DesiredCount
             TaskDefinition: !Ref TaskDefinition
             LoadBalancers:
-                - ContainerName: "homeless-service"
+                - ContainerName: "endpoint-service"
                   ContainerPort: 8000
                   TargetGroupArn: !Ref TargetGroup
 
     TaskDefinition:
         Type: AWS::ECS::TaskDefinition
         Properties:
-            Family: homeless-service
+            Family: endpoint-service
             ContainerDefinitions:
-                - Name: homeless-service
+                - Name: endpoint-service
                   Essential: true
-                  Image: pdxdiver/homeless-service:latest
+                  Image: pdxdiver/endpoint-service:latest
                   Memory: 128
                   Environment:
-                    - Name: CONFIG_BUCKET
-                      Value: !Ref ConfigBucket
-                    - Name: DEPLOY_TARGET
-                      Value: !Ref DeployTarget
+                    - Name: ALB
+                      Value: !Ref ALB
                   PortMappings:
                     - ContainerPort: 8000
                   LogConfiguration:
@@ -85,7 +78,7 @@ Resources:
             Matcher:
                 HttpCode: 200-299
             HealthCheckIntervalSeconds: 40
-            HealthCheckPath: /homeless/#/
+            HealthCheckPath: /
             HealthCheckProtocol: HTTP
             HealthCheckTimeoutSeconds: 30
             HealthyThresholdCount: 2
@@ -94,7 +87,7 @@ Resources:
         Type: AWS::ElasticLoadBalancingV2::ListenerRule
         Properties:
             ListenerArn: !Ref Listener
-            Priority: 3
+            Priority: 9
             Conditions:
                 - Field: path-pattern
                   Values:

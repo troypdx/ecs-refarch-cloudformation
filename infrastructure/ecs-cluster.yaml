@@ -102,7 +102,6 @@ Resources:
             SecurityGroups:
                 - !Ref SecurityGroup
             IamInstanceProfile: !Ref ECSInstanceProfile
-            KeyName: foinkme
             UserData:
                 "Fn::Base64": !Sub |
                     #!/bin/bash
