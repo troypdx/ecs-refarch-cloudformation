@@ -111,7 +111,9 @@ Resources:
                 Cluster: !GetAtt ECS.Outputs.Cluster
                 DesiredCount: 2
                 Listener: !GetAtt ALB.Outputs.Listener
-                Path: /homeless
+                ConfigBucket: ASSIGN9-CONFIG
+                DeployTarget: INTEGRATION
+                Path: /homeless/*
 
     # HousingService:
     #     Type: AWS::CloudFormation::Stack
@@ -135,15 +137,23 @@ Resources:
     #             Listener: !GetAtt ALB.Outputs.Listener
     #             Path: /transportation
 
+    EndPoints:
+        Type: AWS::CloudFormation::Stack
+        Properties:
+            TemplateURL: https://s3-us-west-2.amazonaws.com/cfn-templates-hacko-infra/services/endpoint-service/service.yaml
+            Parameters:
+                VPC: !GetAtt VPC.Outputs.VPC
+                Cluster: !GetAtt ECS.Outputs.Cluster
+                DesiredCount: 2
+                Listener: !GetAtt ALB.Outputs.Listener
+                ALB: !GetAtt ALB.Outputs.LoadBalancerUrl
+                Path: /
 Outputs:
 
     HomelessServiceUrl:
         Description: The URL endpoint for the product service
         Value: !Join [ "/", [ !GetAtt ALB.Outputs.LoadBalancerUrl, "homeless" ]]
 
-    EmerresponseServiceUrl:
-        Description: The URL endpoint for the product service
-        Value: !Join [ "/", [ !GetAtt ALB.Outputs.LoadBalancerUrl, "emerresponse" ]]
 
     # ProductServiceUrl:
     #     Description: The URL endpoint for the product service
